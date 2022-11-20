@@ -27,6 +27,7 @@ onClick={()=>{window.scroll(0,0)}}
 ```javascript
 const [content, setContent] = useState([]);
 const [page, setPage] = useState(1);
+
 const fetchTrending = async () => {
     const { data } = await axios.get(`https://api.themoviedb.org/3/trending/all/day?api_key=${process.env.API_KEY}&page=${page}`);
     
@@ -40,6 +41,25 @@ useEffect(() => {
 
 
 ## Movies component
+* fetch data from moviedb API /discover/movie
+```javascript
+const Movies = ()=>{
+    const [page, setPage] = useState(1);
+    const [numofPages, setNumofPages] = useState();
+    const [content, setContent] = useState([]);
+
+    const fetchMovies = async () => {
+        const { data } = await axios.get(`https://api.themoviedb.org/3/discover/movie?api_key=${process.env.API_KEY}&language=en-US&sort_by=popularity.desc&include_adult=false&include_video=false&page=${page}`);
+        
+        setMovies(data.results);
+        setNumofPages(data.total_pages); // 500 pages
+      };
+
+      useEffect(() => {
+        fetchMovies();
+      }, []);
+}
+```
 
 ## Series component
 
