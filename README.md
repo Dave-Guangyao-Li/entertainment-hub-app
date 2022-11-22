@@ -319,3 +319,102 @@ const Search = ()=>{
     )
 }
 ```
+
+## ContentModal component (details of each movie/series)
+* use material ui modal as ContentModal component
+* landscape and portrait image both available
+* show title, tagline, overview, release date, watch trailer button
+```javascript
+
+const [content, setContent] = useState();
+const [video, setVideo] = useState();
+
+const fetchData = async () => {
+    // fetch movie/series details from API /movie/{movie_id} or /tv/{tv_id}
+    const { data } = await axios.get(`
+    https://api.themoviedb.org/3/${type}/${id}?api_key=${process.env.API_KEY}&language=en-US
+    `);
+
+    setContent(data);
+}
+
+const fetchVideo = async () => {
+    // fetch movie/series video from API /movie/{movie_id}/videos or /tv/{tv_id}/videos
+    const { data } = await axios.get(`
+    https://api.themoviedb.org/3/${type}/${id}/videos?api_key=${process.env.API_KEY}&language=en-US
+    `);
+
+    setVideo(data.results[0]?.key);
+}
+
+useEffect(() => {
+    fetchData();
+    fetchVideo();
+}, []);
+```
+
+## Carousel component
+* react-alice-carousel library
+* Carousel.js folder under ContentModal folder
+* show casts of each movie/series
+
+```javascript
+    <div>
+    <Carousel id={id} media_type={media_type}>
+    </div>
+```
+```javascript
+// copy and paste from react-alice-carousel github usage snippet
+// Carousel.js
+const [credits, setCredits] = useState();
+
+const items = credits?.map((c) => (
+    // image and name of each cast
+    <div className="carouselItem">
+        <img
+            src={c.profile_path ? `${img_300}/${c.profile_path}` : unavailable}
+            alt={c?.name}
+            className="carouselItem__img"
+        />
+        <b className="carouselItem__txt">{c?.name}</b>
+    </div>
+));
+
+const fetchCredits = async () => {
+    // fetch movie/series credits from API /movie/{movie_id}/credits or /tv/{tv_id}/credits
+    const { data } = await axios.get(`
+    https://api.themoviedb.org/3/${media_type}/${id}/credits?api_key=${process.env.API_KEY}&language=en-US
+    `);
+
+    setCredicts(data.cast);
+}
+
+useEffect(() => {
+    fetchCredits();
+}, []);
+
+const responsive = {
+    0: {
+        items: 3,
+    },
+    512: {
+        items: 5,
+    },
+    1024: {
+        items: 7,
+    },
+};
+
+return (
+    <AliceCarousel
+        autoPlay
+        infinite
+        autoPlayInterval="3000"
+        disableDotsControls
+        disableButtonsControls
+        mouseTracking
+        items={items}
+    />
+);
+```
+```
