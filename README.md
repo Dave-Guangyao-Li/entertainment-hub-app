@@ -114,6 +114,8 @@ const Movies = ()=>{
 ```
 
 ## Series component
+* similar to Movies component
+* type = tv
 
 ## config.js
 * store picture url
@@ -225,5 +227,95 @@ const Genres = ({
             ))}
         </div>
     )
+}
+```
+
+## Search component
+* search bar text input
+* use TextField, SearchIcon, Tabs component from Material UI
+* show trending movies or series when no search input
+
+```javascript
+import { TextField, createMuiTheme } from '@material-ui/core';
+import useState from 'react';
+import SearchIcon from '@material-ui/icons/Search';
+import Tabs from '@material-ui/core/Tabs';
+
+const Search = ()=>{
+    const [type, setType] = useState(0);
+    const [page, setPage] = useState(1);
+    const [searchText, setSearchText] = useState(""); // search query
+    const [content, setContent] = useState();
+    const [numOfPages, setNumOfPages] = useState();
+
+    const darkTheme = createMuiTheme({
+        palette: {
+            type: 'dark',
+            primary: {
+                main: '#fff',
+            },
+        },
+    });
+
+    const fetchSearch = async () => { // fetch search results from API /search
+        // type ===1 means tv
+        const { data } = await axios.get(`
+        https://api.themoviedb.org/3/search/${type ? "tv" : "movie"}
+        ?api_key=${process.env.API_KEY}
+            &language=en-US
+            &query=${searchText}
+            &page=${page}
+            &include_adult=false
+        `);
+
+        setContent(data.results);
+        setNumOfPages(data.total_pages);
+    } 
+
+    useEffect(() => {
+        window.scroll(0,0); // scroll to top
+        fetchSearch();
+    }, [type, page]);
+
+    return (
+        <div>
+        <ThemeProvider theme={darkTheme} >
+            <div style={{display:"flex", margin:"15px, 0"}}>
+            <TextField // search bar
+                    style={{flex: 1}}
+                    className="searchBox"
+                    label="Search"
+                    variant="filled"
+                    onChange={(e) => setSearchText(e.target.value)}
+            />
+            
+            <Button variant="contained" style={{marginLeft:10}} onClick={fetchSearch}>
+                <SearchIcon />
+            </Button>
+            
+            <Tabs value={type} indicatorColor="primary" textColor="primary"
+            onChange={(event, newValue)=>{
+                setType(newValue);
+                setPage(1);
+            }}>
+                <Tab style={{width: "50%"}} label="Search Movies" />
+                <Tab style={{width: "50%"}} label="Search Series" />
+            </Tabs>
+        </ThemeProvider>
+
+
+        <div className="trending">
+            {/*copy and paste trending, according to type show different results*/}
+            {searchText && 
+            !content && 
+            (type ? <h2>No Series found</h2> : <h2>No Movies found</h2>)}
+        </div>
+        {numOfPages > 1 && (
+            <CustomPagination setPage={setPage} numOfPages={numOfPages} />
+        )}
+
+            
+        </div>
     )
 }
+```
